@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuesta de Satisfacción · Power BI para la Gestión de la Calidad</title>
+<style>
+  :root{
+    --azul: #1F3F7A;
+    --azul-oscuro: #162E5C;
+    --naranja: #C97A35;
+    --naranja-hover: #B3692C;
+    --fondo: #F7F9FC;
+    --blanco: #FFFFFF;
+    --gris-texto: #4A5468;
+    --gris-claro: #E4E9F2;
+    --sombra: 0 8px 30px rgba(22,46,92,0.08);
+    --sombra-fuerte: 0 14px 40px rgba(22,46,92,0.14);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+    background: var(--fondo);
+    color: var(--gris-texto);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 32px 16px 60px;
+  }
+
+  .contenedor{
+    width:100%;
+    max-width: 720px;
+  }
+
+  /* ===== ENCABEZADO ===== */
+  .encabezado{
+    background: linear-gradient(135deg, var(--azul) 0%, var(--azul-oscuro) 100%);
+    border-radius: 20px;
+    padding: 40px 36px 34px;
+    color: var(--blanco);
+    box-shadow: var(--sombra-fuerte);
+    position: relative;
+    overflow: hidden;
+    animation: aparecer 0.6s ease;
+  }
+
+  .encabezado::before{
+    content:"";
+    position:absolute;
+    top:-60px; right:-60px;
+    width:200px; height:200px;
+    background: rgba(201,122,53,0.18);
+    border-radius:50%;
+  }
+
+  .encabezado::after{
+    content:"";
+    position:absolute;
+    bottom:-80px; left:-40px;
+    width:220px; height:220px;
+    background: rgba(255,255,255,0.05);
+    border-radius:50%;
+  }
+
+  .logo-linea{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom: 26px;
+    position:relative;
+    z-index:1;
+  }
+
+  .logo-linea img{
+    height: 46px;
+    width:auto;
+    filter: brightness(0) invert(1);
+  }
+
+  .institucion-nombre{
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    line-height:1.4;
+  }
+
+  .encabezado h1{
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    position:relative;
+    z-index:1;
+  }
+
+  .encabezado h2{
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #FFD9B0;
+    margin-bottom: 16px;
+    position:relative;
+    z-index:1;
+  }
+
+  .encabezado p.descripcion{
+    font-size: 0.92rem;
+    line-height: 1.6;
+    opacity: 0.92;
+    max-width: 520px;
+    position:relative;
+    z-index:1;
+  }
+
+  .tiempo-estimado{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-top: 18px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    position:relative;
+    z-index:1;
+  }
+
+  /* ===== BARRA DE PROGRESO ===== */
+  .barra-progreso-contenedor{
+    margin: 26px 0 8px;
+  }
+
+  .barra-progreso-fondo{
+    width:100%;
+    height: 8px;
+    background: var(--gris-claro);
+    border-radius: 999px;
+    overflow:hidden;
+  }
+
+  .barra-progreso-relleno{
+    height:100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--naranja), #E0A15E);
+    border-radius: 999px;
+    transition: width 0.45s ease;
+  }
+
+  .indicador-avance{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size: 0.82rem;
+    color: var(--azul);
+    font-weight: 600;
+    margin-top: 8px;
+  }
+
+  /* ===== TARJETAS DE PREGUNTA ===== */
+  form{margin-top: 26px;}
+
+  .tarjeta{
+    background: var(--blanco);
+    border-radius: 18px;
+    padding: 30px 28px;
+    box-shadow: var(--sombra);
+    margin-bottom: 20px;
+    border: 1px solid rgba(31,63,122,0.06);
+    animation: aparecer 0.5s ease;
+  }
+
+  .tarjeta-numero{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(31,63,122,0.08);
+    color: var(--azul);
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+  }
+
+  .tarjeta-pregunta{
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: var(--azul-oscuro);
+    line-height: 1.45;
+    margin-bottom: 22px;
+  }
+
+  /* ===== ESCALA VISUAL ===== */
+  .escala{
+    display:flex;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .escala-opcion{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    padding: 14px 4px;
+    border-radius: 12px;
+    border: 2px solid var(--gris-claro);
+    background: var(--fondo);
+    cursor:pointer;
+    transition: all 0.2s ease;
+    user-select:none;
+  }
+
+  .escala-opcion .numero{
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--azul);
+    transition: color 0.2s ease;
+  }
+
+  .escala-opcion:hover{
+    border-color: var(--naranja);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(201,122,53,0.15);
+  }
+
+  .escala-opcion.seleccionada{
+    background: linear-gradient(135deg, var(--naranja), #D68A47);
+    border-color: var(--naranja);
+    animation: pulso 0.35s ease;
+  }
+
+  .escala-opcion.seleccionada .numero{
+    color: var(--blanco);
+  }
+
+  @keyframes pulso{
+    0%{transform:scale(0.92);}
+    60%{transform:scale(1.04);}
+    100%{transform:scale(1);}
+  }
+
+  .etiquetas-escala{
+    display:flex;
+    justify-content:space-between;
+    font-size: 0.72rem;
+    color: #8892A6;
+    padding: 0 2px;
+  }
+
+  .etiquetas-escala span:first-child{text-align:left; max-width:90px;}
+  .etiquetas-escala span:last-child{text-align:right; max-width:90px;}
+
+  /* ===== PREGUNTA ABIERTA ===== */
+  textarea{
+    width:100%;
+    min-height: 130px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 2px solid var(--gris-claro);
+    background: var(--fondo);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--gris-texto);
+    resize: vertical;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  textarea:focus{
+    outline:none;
+    border-color: var(--naranja);
+    box-shadow: 0 0 0 4px rgba(201,122,53,0.12);
+    background: var(--blanco);
+  }
+
+  .mensaje-error{
+    display:none;
+    color: #C0392B;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    font-weight: 600;
+  }
+
+  .tarjeta.con-error .mensaje-error{display:block;}
+  .tarjeta.con-error .escala-opcion{border-color:#E8B4AC;}
+  .tarjeta.con-error textarea{border-color:#E8B4AC;}
+
+  /* ===== BOTÓN ENVIAR ===== */
+  .boton-enviar{
+    width:100%;
+    padding: 18px;
+    border:none;
+    border-radius: 14px;
+    background: var(--naranja);
+    color: var(--blanco);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor:pointer;
+    box-shadow: 0 10px 24px rgba(201,122,53,0.3);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    margin-top: 6px;
+  }
+
+  .boton-enviar:hover:not(:disabled){
+    background: var(--naranja-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(201,122,53,0.38);
+  }
+
+  .boton-enviar:active:not(:disabled){
+    transform: translateY(0);
+  }
+
+  .boton-enviar:disabled{
+    opacity: 0.75;
+    cursor: not-allowed;
+  }
+
+  .pie-institucional{
+    text-align:center;
+    margin-top: 26px;
+    font-size: 0.78rem;
+    color: #9AA4B8;
+    line-height: 1.6;
+  }
+
+  /* ===== PANTALLA DE ÉXITO ===== */
+  .pantalla-exito{
+    display:none;
+    background: var(--blanco);
+    border-radius: 20px;
+    padding: 56px 36px;
+    text-align:center;
+    box-shadow: var(--sombra-fuerte);
+    animation: aparecer 0.6s ease;
+  }
+
+  .pantalla-exito.visible{display:block;}
+
+  .icono-exito{
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--azul), var(--azul-oscuro));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: var(--blanco);
+    font-size: 2.2rem;
+    font-weight:700;
+    animation: pulso 0.5s ease;
+  }
+
+  .pantalla-exito h2{
+    color: var(--azul-oscuro);
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+  }
+
+  .pantalla-exito p.mensaje{
+    color: var(--gris-texto);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    max-width: 440px;
+    margin: 0 auto 26px;
+  }
+
+  .firma-institucional{
+    border-top: 1px solid var(--gris-claro);
+    padding-top: 20px;
+    font-size: 0.82rem;
+    color: var(--azul);
+    font-weight: 700;
+    line-height:1.6;
+  }
+
+  .firma-institucional span{
+    display:block;
+    font-weight: 500;
+    color: var(--gris-texto);
+    font-size: 0.78rem;
+  }
+
+  @keyframes aparecer{
+    from{opacity:0; transform: translateY(10px);}
+    to{opacity:1; transform: translateY(0);}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation: none !important; transition: none !important;}
+  }
+
+  /* ===== RESPONSIVE MÓVIL ===== */
+  @media (max-width: 600px){
+    body{padding: 18px 10px 40px;}
+    .encabezado{padding: 30px 22px 26px; border-radius:16px;}
+    .encabezado h1{font-size:1.5rem;}
+    .encabezado h2{font-size:0.95rem;}
+    .tarjeta{padding:22px 18px; border-radius:14px;}
+    .tarjeta-pregunta{font-size:0.98rem;}
+    .escala{gap:6px;}
+    .escala-opcion{padding:10px 2px; border-radius:10px;}
+    .escala-opcion .numero{font-size:1rem;}
+    .etiquetas-escala{font-size:0.65rem;}
+    .etiquetas-escala span:first-child,
+    .etiquetas-escala span:last-child{max-width:70px;}
+    .pantalla-exito{padding:40px 22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="contenedor">
+
+  <!-- ENCABEZADO -->
+  <div class="encabezado">
+    <div class="logo-linea">
+      <img src="https://www.uniatlantico.edu.co/wp-content/uploads/2023/01/Universidad-del-Atla%CC%81ntico-e1672809639550-300x127.png" alt="Universidad del Atlántico">
+      <div class="institucion-nombre">Universidad del Atlántico<br>Especialización en Gestión de la Calidad</div>
+    </div>
+    <h1>Encuesta de satisfacción</h1>
+    <h2>Curso Power BI para la Gestión de la Calidad</h2>
+    <p class="descripcion">Tu opinión es muy importante para nosotros. Esta encuesta nos permitirá conocer tu experiencia y continuar mejorando nuestras actividades de formación.</p>
+    <div class="tiempo-estimado">⏱ Tiempo estimado: 2 minutos</div>
+  </div>
+
+  <!-- BARRA DE PROGRESO -->
+  <div class="barra-progreso-contenedor">
+    <div class="barra-progreso-fondo">
+      <div class="barra-progreso-relleno" id="barraRelleno"></div>
+    </div>
+    <div class="indicador-avance">
+      <span id="textoAvance">0 de 7 preguntas respondidas</span>
+      <span id="porcentajeAvance">0%</span>
+    </div>
+  </div>
+
+  <!-- FORMULARIO -->
+  <form id="formularioEncuesta" novalidate>
+
+    <div class="tarjeta" data-pregunta="pregunta1">
+      <div class="tarjeta-numero">1</div>
+      <div class="tarjeta-pregunta">¿Qué tan satisfecho(a) estás con el curso en general?</div>
+      <div class="escala" data-campo="pregunta1">
+        <div class="escala-opcion" data-valor="1"><span class="numero">1</span></div>
+        <div class="escala-opcion" data-valor="2"><span class="numero">2</span></div>
+        <div class="escala-opcion" data-valor="3"><span class="numero">3</span></div>
+        <div class="escala-opcion" data-valor="4"><span class="numero">4</span></div>
+        <div class="escala-opcion" data-valor="5"><span class="numero">5</span></div>
+      </div>
+      <div class="etiquetas-escala"><span>Muy insatisfecho</span><span>Muy satisfecho</span></div>
+      <div class="mensaje-error">Por favor selecciona una opción.</div>
+    </div>
+
+    <div class="tarjeta" data-pregunta="pregunta2">
+      <div class="tarjeta-numero">2</div>
+      <div class="tarjeta-pregunta">¿Qué tan satisfecho(a) estás con la organización y desarrollo de las sesiones?</div>
+      <div class="escala" data-campo="pregunta2">
+        <div class="escala-opcion" data-valor="1"><span class="numero">1</span></div>
+        <div class="escala-opcion" data-valor="2"><span class="numero">2</span></div>
+        <div class="escala-opcion" data-valor="3"><span class="numero">3</span></div>
+        <div class="escala-opcion" data-valor="4"><span class="numero">4</span></div>
+        <div class="escala-opcion" data-valor="5"><span class="numero">5</span></div>
+      </div>
+      <div class="etiquetas-escala"><span>Muy insatisfecho</span><span>Muy satisfecho</span></div>
+      <div class="mensaje-error">Por favor selecciona una opción.</div>
+    </div>
+
+    <div class="tarjeta" data-pregunta="pregunta3">
+      <div class="tarjeta-numero">3</div>
+      <div class="tarjeta-pregunta">¿Qué tan satisfecho(a) estás con la claridad y dominio del docente durante el curso?</div>
+      <div class="escala" data-campo="pregunta3">
+        <div class="escala-opcion" data-valor="1"><span class="numero">1</span></div>
+        <div class="escala-opcion" data-valor="2"><span class="numero">2</span></div>
+        <div class="escala-opcion" data-valor="3"><span class="numero">3</span></div>
+        <div class="escala-opcion" data-valor="4"><span class="numero">4</span></div>
+        <div class="escala-opcion" data-valor="5"><span class="numero">5</span></div>
+      </div>
+      <div class="etiquetas-escala"><span>Muy insatisfecho</span><span>Muy satisfecho</span></div>
+      <div class="mensaje-error">Por favor selecciona una opción.</div>
+    </div>
+
+    <div class="tarjeta" data-pregunta="pregunta4">
+      <div class="tarjeta-numero">4</div>
+      <div class="tarjeta-pregunta">¿Consideras que los contenidos abordados fueron útiles y pertinentes para la Gestión de la Calidad?</div>
+      <div class="escala" data-campo="pregunta4">
+        <div class="escala-opcion" data-valor="1"><span class="numero">1</span></div>
+        <div class="escala-opcion" data-valor="2"><span class="numero">2</span></div>
+        <div class="escala-opcion" data-valor="3"><span class="numero">3</span></div>
+        <div class="escala-opcion" data-valor="4"><span class="numero">4</span></div>
+        <div class="escala-opcion" data-valor="5"><span class="numero">5</span></div>
+      </div>
+      <div class="etiquetas-escala"><span>Muy insatisfecho</span><span>Muy satisfecho</span></div>
+      <div class="mensaje-error">Por favor selecciona una opción.</div>
+    </div>
+
+    <div class="tarjeta" data-pregunta="pregunta5">
+      <div class="tarjeta-numero">5</div>
+      <div class="tarjeta-pregunta">¿Qué tan satisfecho(a) estás con la metodología y los ejercicios prácticos utilizados durante el curso?</div>
+      <div class="escala" data-campo="pregunta5">
+        <div class="escala-opcion" data-valor="1"><span class="numero">1</span></div>
+        <div class="escala-opcion" data-valor="2"><span class="numero">2</span></div>
+        <div class="escala-opcion" data-valor="3"><span class="numero">3</span></div>
+        <div class="escala-opcion" data-valor="4"><span class="numero">4</span></div>
+        <div class="escala-opcion" data-valor="5"><span class="numero">5</span></div>
+      </div>
+      <div class="etiquetas-escala"><span>Muy insatisfecho</span><span>Muy satisfecho</span></div>
+      <div class="mensaje-error">Por favor selecciona una opción.</div>
+    </div>
+
+    <div class="tarjeta" data-pregunta="pregunta6">
+      <div class="tarjeta-numero">6</div>
+      <div class="tarjeta-pregunta">En una escala de 1 a 5, ¿qué tan preparado(a) te sientes para aplicar los conocimientos de Power BI adquiridos en el curso?</div>
+      <div class="escala" data-campo="pregunta6">
+        <div class="escala-opcion" data-valor="1"><span class="numero">1</span></div>
+        <div class="escala-opcion" data-valor="2"><span class="numero">2</span></div>
+        <div class="escala-opcion" data-valor="3"><span class="numero">3</span></div>
+        <div class="escala-opcion" data-valor="4"><span class="numero">4</span></div>
+        <div class="escala-opcion" data-valor="5"><span class="numero">5</span></div>
+      </div>
+      <div class="etiquetas-escala"><span>Nada preparado(a)</span><span>Muy preparado(a)</span></div>
+      <div class="mensaje-error">Por favor selecciona una opción.</div>
+    </div>
+
+    <div class="tarjeta" data-pregunta="pregunta7">
+      <div class="tarjeta-numero">7</div>
+      <div class="tarjeta-pregunta">¿Qué fue lo que más te gustó del curso y qué aspecto consideras que podríamos mejorar?</div>
+      <textarea id="pregunta7" name="pregunta7" placeholder="Escribe aquí tu respuesta..."></textarea>
+      <div class="mensaje-error">Por favor comparte tu respuesta.</div>
+    </div>
+
+    <button type="submit" class="boton-enviar" id="botonEnviar">ENVIAR ENCUESTA</button>
+
+    <div class="pie-institucional">
+      Universidad del Atlántico · Especialización en Gestión de la Calidad<br>
+      Tus respuestas son confidenciales y se utilizan únicamente con fines de mejora académica.
+    </div>
+  </form>
+
+  <!-- PANTALLA DE ÉXITO -->
+  <div class="pantalla-exito" id="pantallaExito">
+    <div class="icono-exito">✓</div>
+    <h2>¡Gracias por compartir tu experiencia!</h2>
+    <p class="mensaje">Tu opinión nos ayuda a seguir fortaleciendo nuestros procesos de formación y a ofrecer mejores experiencias de aprendizaje.</p>
+    <div class="firma-institucional">
+      Universidad del Atlántico
+      <span>Especialización en Gestión de la Calidad</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ============================================================
+  // URL del Web App de Google Apps Script.
+  // Reemplazar con la URL real una vez publicado el script.
+  // ============================================================
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxx5tcLz1Knsb93Nr0N5EIYH4QXz8jK1ShLsSBw0pf4f2XXC0URqK6yoVBpxWrgBRC8fg/exec';
+  const SHEET_ID = '1sfc-9caCNkEZ9yEKkYSZt0iumWS09qv1YI3y8cNdJns';
+  const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1sfc-9caCNkEZ9yEKkYSZt0iumWS09qv1YI3y8cNdJns/edit';
+
+  const respuestas = {
+    pregunta1: null,
+    pregunta2: null,
+    pregunta3: null,
+    pregunta4: null,
+    pregunta5: null,
+    pregunta6: null,
+    pregunta7: ''
+  };
+
+  const totalPreguntas = 7;
+
+  const barraRelleno = document.getElementById('barraRelleno');
+  const textoAvance = document.getElementById('textoAvance');
+  const porcentajeAvance = document.getElementById('porcentajeAvance');
+  const formulario = document.getElementById('formularioEncuesta');
+  const botonEnviar = document.getElementById('botonEnviar');
+  const pantallaExito = document.getElementById('pantallaExito');
+  const textareaPregunta7 = document.getElementById('pregunta7');
+
+  // Manejo de selección de escalas
+  document.querySelectorAll('.escala').forEach(function(escala){
+    const campo = escala.getAttribute('data-campo');
+    escala.querySelectorAll('.escala-opcion').forEach(function(opcion){
+      opcion.addEventListener('click', function(){
+        escala.querySelectorAll('.escala-opcion').forEach(function(o){
+          o.classList.remove('seleccionada');
+        });
+        opcion.classList.add('seleccionada');
+        respuestas[campo] = opcion.getAttribute('data-valor');
+
+        const tarjeta = escala.closest('.tarjeta');
+        tarjeta.classList.remove('con-error');
+
+        actualizarProgreso();
+      });
+    });
+  });
+
+  // Manejo de la pregunta abierta
+  textareaPregunta7.addEventListener('input', function(){
+    respuestas.pregunta7 = textareaPregunta7.value.trim();
+    if(respuestas.pregunta7.length > 0){
+      textareaPregunta7.closest('.tarjeta').classList.remove('con-error');
+    }
+    actualizarProgreso();
+  });
+
+  function actualizarProgreso(){
+    let respondidas = 0;
+    for(let i = 1; i <= 6; i++){
+      if(respuestas['pregunta' + i] !== null) respondidas++;
+    }
+    if(respuestas.pregunta7 && respuestas.pregunta7.length > 0) respondidas++;
+
+    const porcentaje = Math.round((respondidas / totalPreguntas) * 100);
+    barraRelleno.style.width = porcentaje + '%';
+    textoAvance.textContent = respondidas + ' de ' + totalPreguntas + ' preguntas respondidas';
+    porcentajeAvance.textContent = porcentaje + '%';
+  }
+
+  function validarFormulario(){
+    let esValido = true;
+
+    for(let i = 1; i <= 6; i++){
+      const campo = 'pregunta' + i;
+      if(respuestas[campo] === null){
+        esValido = false;
+        document.querySelector('.tarjeta[data-pregunta="' + campo + '"]').classList.add('con-error');
+      }
+    }
+
+    if(!respuestas.pregunta7 || respuestas.pregunta7.length === 0){
+      esValido = false;
+      document.querySelector('.tarjeta[data-pregunta="pregunta7"]').classList.add('con-error');
+    }
+
+    return esValido;
+  }
+
+  formulario.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    if(!validarFormulario()){
+      const primeraTarjetaConError = document.querySelector('.tarjeta.con-error');
+      if(primeraTarjetaConError){
+        primeraTarjetaConError.scrollIntoView({behavior:'smooth', block:'center'});
+      }
+      return;
+    }
+
+    botonEnviar.disabled = true;
+    botonEnviar.textContent = 'Enviando encuesta...';
+
+    const datos = new URLSearchParams();
+
+    datos.append('pregunta1', respuestas.pregunta1 || '');
+    datos.append('pregunta2', respuestas.pregunta2 || '');
+    datos.append('pregunta3', respuestas.pregunta3 || '');
+    datos.append('pregunta4', respuestas.pregunta4 || '');
+    datos.append('pregunta5', respuestas.pregunta5 || '');
+    datos.append('pregunta6', respuestas.pregunta6 || '');
+    datos.append('pregunta7', respuestas.pregunta7 || '');
+    datos.append('fecha', new Date().toISOString());
+
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+      },
+      body: datos.toString()
+    })
+    .then(function(){
+      mostrarPantallaExito();
+    })
+    .catch(function(error){
+      console.error('Error al enviar la encuesta:', error);
+      botonEnviar.disabled = false;
+      botonEnviar.textContent = 'ENVIAR ENCUESTA';
+      alert('No fue posible enviar la encuesta. Por favor intenta nuevamente.');
+    });
+  });
+
+  function mostrarPantallaExito(){
+    formulario.style.display = 'none';
+    pantallaExito.classList.add('visible');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+
+</body>
+</html>
