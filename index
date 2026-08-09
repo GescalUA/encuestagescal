@@ -664,24 +664,23 @@
     botonEnviar.disabled = true;
     botonEnviar.textContent = 'Enviando encuesta...';
 
-    const datos = new URLSearchParams();
+    const params = new URLSearchParams({
+      pregunta1: respuestas.pregunta1 || '',
+      pregunta2: respuestas.pregunta2 || '',
+      pregunta3: respuestas.pregunta3 || '',
+      pregunta4: respuestas.pregunta4 || '',
+      pregunta5: respuestas.pregunta5 || '',
+      pregunta6: respuestas.pregunta6 || '',
+      pregunta7: respuestas.pregunta7 || '',
+      fecha: new Date().toISOString()
+    });
 
-    datos.append('pregunta1', respuestas.pregunta1 || '');
-    datos.append('pregunta2', respuestas.pregunta2 || '');
-    datos.append('pregunta3', respuestas.pregunta3 || '');
-    datos.append('pregunta4', respuestas.pregunta4 || '');
-    datos.append('pregunta5', respuestas.pregunta5 || '');
-    datos.append('pregunta6', respuestas.pregunta6 || '');
-    datos.append('pregunta7', respuestas.pregunta7 || '');
-    datos.append('fecha', new Date().toISOString());
-
-    fetch(SCRIPT_URL, {
-      method: 'POST',
+    // GET + no-cors es deliberado: evita el preflight/CORS de POST
+    // y es compatible con Google Apps Script Web Apps.
+    fetch(SCRIPT_URL + '?' + params.toString(), {
+      method: 'GET',
       mode: 'no-cors',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-      },
-      body: datos.toString()
+      cache: 'no-store'
     })
     .then(function(){
       mostrarPantallaExito();
